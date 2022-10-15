@@ -1,9 +1,9 @@
 from telegram import Bot
 import os
 import sys
-import logging
-import requests
 import time
+import requests
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -45,6 +45,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
+    """Получает json со списком работ."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     try:
@@ -126,8 +127,6 @@ def main():
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
             send_message(bot, message)
-        else:
-            current_timestamp = response['current_date']
         finally:
             time.sleep(RETRY_TIME)
 
