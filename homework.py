@@ -49,6 +49,7 @@ def get_api_answer(current_timestamp):
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     try:
+        logger.info("К Яндекс.Практикум API отправлен запрос")
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
     except Exception as error:
         logger.error(error)
@@ -62,11 +63,13 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет наличие работы в ответе от сервера."""
-    homeworks = response['homeworks']
-    if homeworks is None:
+    homeworks = response.get("homeworks")
+    try:
+        homeworks = response['homeworks']
+    except IndexError:
         logger.error('В ответе сервера нет данных о работе.')
-    if isinstance(homeworks, list):
-        return homeworks
+        raise IndexError('В ответе сервера нет данных о работе.')
+    return homeworks
 
 
 def parse_status(homework):
@@ -83,18 +86,8 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность токенов."""
-    tokens = {
-        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
-        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
-        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID,
-    }
-    for token, value in tokens.items():
-        if not value:
-            logger.critical(
-                f'Отсутствует обязательная переменная окружения: {token}'
-            )
-            return False
-    return True
+    if all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]):
+        return True
 
 
 def main():
@@ -105,11 +98,12 @@ def main():
     bot = Bot(token=TELEGRAM_TOKEN)
     homework_preload_id = 0
     homework_preload_status = 'initial'
+    current_timestamp = 1666184325
     while True:
         try:
-            # current_timestamp = int(time.time())
-            timestamp = 1652289700
-            response = get_api_answer(timestamp)
+            current_timestamp = int(time.time())
+            current_timestamp = [0]
+            response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
             homework = homeworks[0]
             status_received = homework['status']
@@ -127,6 +121,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
             send_message(bot, message)
+        else:
+            current_timestamp = response['current_date']
         finally:
             time.sleep(RETRY_TIME)
 
