@@ -63,9 +63,15 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет наличие работы в ответе от сервера."""
-    homeworks = response.get("homeworks")
+    if type(response) is not dict:
+        raise TypeError('Ответ API отличен от словаря')
     try:
-        homeworks = response['homeworks']
+        list_works = response['homeworks']
+    except KeyError:
+        logger.error('Ошибка словаря по ключу homeworks')
+        raise KeyError('Ошибка словаря по ключу homeworks')
+    try:
+        homeworks = list_works[0]
     except IndexError:
         logger.error('В ответе сервера нет данных о работе.')
         raise IndexError('В ответе сервера нет данных о работе.')
@@ -74,8 +80,12 @@ def check_response(response):
 
 def parse_status(homework):
     """Выносит вердикт о проверке работы."""
-    homework_name = homework.get('homework_name')
-    homework_status = homework.get('status')
+    if 'homework_name' not in homework:
+        raise KeyError('Отсутствует ключ "homework_name" в ответе API')
+    if 'status' not in homework:
+        raise Exception('Отсутствует ключ "status" в ответе API')
+    homework_name = homework['homework_name']
+    homework_status = homework['status']
     if homework_name is None:
         logger.error('В ответе сервера нет названия домашней работы.')
     if homework_status is None:
