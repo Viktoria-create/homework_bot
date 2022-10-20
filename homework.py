@@ -57,8 +57,7 @@ def get_api_answer(current_timestamp):
         if response.status_code != 200:
             raise OSError("Response " + str(response.status_code)
                           + ": " + response.content)
-        else:
-            return response.json()
+    return response.json()
 
 
 def check_response(response):
@@ -72,9 +71,9 @@ def check_response(response):
         raise KeyError('Ошибка словаря по ключу homeworks')
     try:
         homeworks = list_works[0]
-    except IndexError:
+    except Exception:
         logger.error('В ответе сервера нет данных о работе.')
-        raise IndexError('В ответе сервера нет данных о работе.')
+        raise Exception('В ответе сервера нет данных о работе.')
     return homeworks
 
 
@@ -96,8 +95,7 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность токенов."""
-    if all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]):
-        return True
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def main():
@@ -108,7 +106,6 @@ def main():
     bot = Bot(token=TELEGRAM_TOKEN)
     homework_preload_id = 0
     homework_preload_status = 'initial'
-    current_timestamp = 1666184325
     while True:
         try:
             current_timestamp = int(time.time())
