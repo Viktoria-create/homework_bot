@@ -37,11 +37,10 @@ HOMEWORK_STATUSES = {
 def send_message(bot, message):
     """Посылает сообщение от бота в чат с TELEGRAM_CHAT_ID."""
     try:
+        logger.info(f'Отправлено сообщение: "{message}"')
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except Exception as error:
         logger.error(error)
-    else:
-        logger.info(f'Отправлено сообщение: "{message}"')
 
 
 def get_api_answer(current_timestamp):
@@ -65,16 +64,14 @@ def check_response(response):
     if type(response) is not dict:
         raise TypeError('Ответ API отличен от словаря')
     try:
-        list_works = response['homeworks']
+        response['homeworks'][0]
     except KeyError:
         logger.error('Ошибка словаря по ключу homeworks')
         raise KeyError('Ошибка словаря по ключу homeworks')
-    try:
-        homeworks = list_works[0]
     except Exception:
         logger.error('В ответе сервера нет данных о работе.')
         raise Exception('В ответе сервера нет данных о работе.')
-    return homeworks
+    return response
 
 
 def parse_status(homework):
@@ -95,7 +92,8 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяет доступность токенов."""
-    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    token = [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]
+    return all(token)
 
 
 def main():
